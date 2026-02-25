@@ -13,12 +13,14 @@ export default function App() {
       </div>
       <div className="right">
         <Topbar />
-        <Routes>
-          <Route path="/ " element={<Market />} />
-          <Route path="market" element={<Market />} />
-          <Route path="stocks" element={<Stocks />} />
-          <Route path="inventory" element={<Inventory />} />
-        </Routes>
+        <div className="flex-1 overflow-y-auto">
+          <Routes>
+            <Route path="/" element={<Market />} />
+            <Route path="market" element={<Market />} />
+            <Route path="stocks" element={<Stocks />} />
+            <Route path="inventory" element={<Inventory />} />
+          </Routes>
+        </div>
       </div>
     </BrowserRouter>
   );
