@@ -2,7 +2,7 @@
 
 1. Stack
 
-- Frontend: React, Typescript, Talwind CSS (will add later)
+- Frontend: React, Typescript, Talwind CSS
 - Backend: Node.js, Typescript, Fastify
 - Database: MongoDB
 
