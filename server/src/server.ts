@@ -1,11 +1,35 @@
-const fastify = require("fastify")({ logger: true });
+import fastify from "fastify";
+import cors from "@fastify/cors";
+import { PrismaClient } from "./generated/prisma";
+import "dotenv/config";
+
+const app = fastify({ logger: true });
+const prisma = new PrismaClient();
 const PORT = 5000;
+
+app.register(cors, { origin: true });
+
+app.get("/contracts", async (req, reply) => {
+  return await prisma.contracts.findMany();
+});
+
+app.get("/products", async (req, reply) => {
+  return await prisma.products.findMany();
+});
+
+app.get("/stocks", async (req, reply) => {
+  return await prisma.stocks.findMany();
+});
+
+app.get("/users", async (req, reply) => {
+  return await prisma.users.findMany();
+});
 
 const start = async () => {
   try {
-    await fastify.listen({ port: PORT });
+    await app.listen({ port: PORT });
   } catch (error) {
-    fastify.log.error(error);
+    app.log.error(error);
     process.exit(1);
   }
 };

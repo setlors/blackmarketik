@@ -4,6 +4,7 @@ import Market from "./components/Market";
 import Stocks from "./components/Stocks";
 import Inventory from "./components/Inventory";
 import Topbar from "./components/Topbar";
+import Contracts from "./components/Contracts";
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
             <Route path="/" element={<Market />} />
             <Route path="market" element={<Market />} />
             <Route path="stocks" element={<Stocks />} />
+            <Route path="contracts" element={<Contracts />} />
             <Route path="inventory" element={<Inventory />} />
           </Routes>
         </div>

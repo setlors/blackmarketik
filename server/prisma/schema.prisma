@@ -1,0 +1,42 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mongodb"
+  url = env("DATABASE_URL")
+}
+
+model contracts {
+  id   String @id @map("_id")
+  name String
+  pay  Int
+}
+
+model products {
+  id          String @id @map("_id")
+  combat      Int
+  description String
+  hacking     Int
+  image       String
+  name        String
+  price       Int
+  stealth     Int
+}
+
+model stocks {
+  id         String @id @map("_id")
+  basePrice  Int
+  name       String
+  volatility Float
+}
+
+model Users {
+  id String @id @map("_id")
+  username String @unique
+  password String
+  wallet Int @default(30)
+  inventory String[]
+  portfolio String[]
+}
