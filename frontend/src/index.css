@@ -14,7 +14,8 @@
 
 @layer base {
   body {
-    @apply bg-bg-dark text-text-light font-display m-0;
+    @apply bg-bg-dark text-text-light font-display m-0 overflow-hidden;
+    background: linear-gradient(135deg, #0f0f1e 0%, #141428 50%, #10101e 100%);
   }
 
   h1,
@@ -22,15 +23,11 @@
   h3 {
     @apply text-pink-hot;
   }
-
-  #root {
-    @apply flex h-screen w-screen box-border gap-0;
-  }
 }
 
 @layer components {
   .sidebar {
-    @apply bg-card-dark h-full flex flex-col shrink-0 w-56 p-6 border-r border-pink-hot/20;
+    @apply bg-card-dark/80 h-full flex flex-col shrink-0 w-56 p-6 border-r border-pink-hot/20;
   }
 
   .sidebar h2 {
@@ -53,16 +50,8 @@
     @apply bg-pink-hot/20 text-pink-hot;
   }
 
-  .left {
-    @apply w-56 shrink-0;
-  }
-
-  .right {
-    @apply flex-1 bg-bg-dark flex flex-col overflow-hidden p-6;
-  }
-
   .topbar {
-    @apply bg-card-dark border border-pink-hot/20 rounded-2xl p-6 mb-6 flex justify-between items-center;
+    @apply bg-card-dark/75 border border-pink-hot/20 rounded-2xl p-6 mb-6 flex justify-between items-center;
   }
 
   .userinfo {
@@ -78,6 +67,6 @@
   }
 
   .item-card {
-    @apply bg-card-dark border border-pink-hot/20 rounded-2xl p-4 transition-all duration-300 hover:border-pink-hot/50;
+    @apply bg-card-dark/75 border border-pink-hot/20 rounded-2xl p-4 transition-all duration-300 hover:border-pink-hot/50;
   }
 }
