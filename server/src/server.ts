@@ -1,10 +1,19 @@
 import fastify from "fastify";
 import cors from "@fastify/cors";
 import { PrismaClient } from "./generated/prisma";
+import { MongoClient } from "mongodb";
 import "dotenv/config";
 
 const app = fastify({ logger: true });
 const prisma = new PrismaClient();
+const mongoUrl = process.env.DATABASE_URL;
+
+if (!mongoUrl) {
+  throw new Error("DATABASE_URL is not set");
+}
+
+const mongoClient = new MongoClient(mongoUrl);
+const mongoDb = mongoClient.db();
 const PORT = 5000;
 
 app.register(cors, { origin: true });
@@ -26,14 +35,14 @@ app.get("/users", async (req, reply) => {
 });
 
 app.post("/contracts/:id/start", async (req, res) => {
-  const params = req.params as { id: string };
-  const jId = params.id;
+  const id = (req.params as { id: string }).id;
+  const lockedTill = new Date(Date.now() + 3600000); //locked for an hour
 
-  const neww = await prisma.contracts.update({
-    where: { id: jId },
-    data: { lockedTill: new Date(Date.now() + 3600000) }, //locked for an hour
-  });
-  return neww;
+  await mongoDb
+    .collection("contracts")
+    .updateOne({ id: id }, { $set: { lockedTill } });
+
+  return { lockedTill };
 });
 
 const start = async () => {
