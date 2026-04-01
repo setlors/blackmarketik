@@ -5,6 +5,7 @@ interface Job {
   id: string;
   name: string;
   pay: number;
+  lockedTill: string;
 }
 
 export default function Contracts() {
@@ -15,6 +16,29 @@ export default function Contracts() {
       .then((res) => res.json())
       .then((data) => setJobs(data));
   }, []);
+
+  const start = async (idshka: string) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/contracts/${idshka}/start`,
+        {
+          method: "POST",
+        },
+      );
+      if (response.ok) {
+        const updated = await response.json();
+        setJobs((all) =>
+          all.map((one) =>
+            one.id === idshka
+              ? { ...one, lockedTill: updated.lockedTill }
+              : one,
+          ),
+        );
+      }
+    } catch (error) {
+      console.log("womp womp", error);
+    }
+  };
 
   return (
     <div className="flex-1 overflow-y-auto p-2">

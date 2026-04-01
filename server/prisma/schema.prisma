@@ -12,6 +12,7 @@ model contracts {
   id   String @id @map("_id")
   name String
   pay  Int
+  lockedTill DateTime @default(now())
 }
 
 model products {

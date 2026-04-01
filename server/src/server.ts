@@ -25,6 +25,17 @@ app.get("/users", async (req, reply) => {
   return await prisma.users.findMany();
 });
 
+app.post("/contracts/:id/start", async (req, res) => {
+  const params = req.params as { id: string };
+  const jId = params.id;
+
+  const neww = await prisma.contracts.update({
+    where: { id: jId },
+    data: { lockedTill: new Date(Date.now() + 3600000) }, //locked for an hour
+  });
+  return neww;
+});
+
 const start = async () => {
   try {
     await app.listen({ port: PORT });
