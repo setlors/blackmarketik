@@ -1,7 +1,7 @@
 import fastify from "fastify";
 import cors from "@fastify/cors";
 import { PrismaClient } from "./generated/prisma";
-import { MongoClient } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
 import "dotenv/config";
 
 const app = fastify({ logger: true });
@@ -85,13 +85,13 @@ app.post("/users/:id/pay", async (req, res) => {
   await mongoDb
     .collection<any>("users")
     .updateOne(
-      { $or: [{ _id: id }, { id: id }] },
+      { $or: [{ _id: new ObjectId(id) }, { id: id }] },
       { $inc: { wallet: amount } },
     );
 
   const ugh = await mongoDb
     .collection<any>("users")
-    .findOne({ $or: [{ _id: id }, { id: id }] });
+    .findOne({ $or: [{ _id: new ObjectId(id) }, { id: id }] });
 
   return ugh;
 });

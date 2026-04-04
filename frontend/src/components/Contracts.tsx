@@ -47,10 +47,11 @@ export default function Contracts() {
           body: JSON.stringify({ amount: goWork.priority }),
         });
         setBalance((prev) => prev + goWork.priority);
+        window.dispatchEvent(new Event("groshi"));
       }
       isWorking.current = false;
       proccesQ();
-    }, 10000);
+    }, 300000);
   };
 
   const start = async (job: Job) => {

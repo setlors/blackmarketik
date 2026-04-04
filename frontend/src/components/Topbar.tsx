@@ -14,9 +14,14 @@ export default function Topbar() {
   const [user, setUser] = useState<User[]>([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/users")
-      .then((res) => res.json())
-      .then((data) => setUser(data));
+    const load = () => {
+      fetch("http://localhost:5000/users")
+        .then((res) => res.json())
+        .then((data) => setUser(data));
+    };
+    load();
+    window.addEventListener("groshi", load);
+    return () => window.removeEventListener("groshi", load);
   }, []);
 
   const current = user[0];
