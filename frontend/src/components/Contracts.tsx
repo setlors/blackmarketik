@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DollarSign } from "lucide-react";
+import { BiQueue } from "../process/queue";
 
 interface Job {
   id: string;
@@ -10,6 +11,10 @@ interface Job {
 
 export default function Contracts() {
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [, setBalance] = useState(0);
+  const [usId, setUsId] = useState<string | null>(null);
+  const sumQueue = useRef(new BiQueue());
+  const isWorking = useRef(false);
 
   useEffect(() => {
     fetch("http://localhost:5000/contracts")
@@ -17,10 +22,41 @@ export default function Contracts() {
       .then((data) => setJobs(data));
   }, []);
 
-  const start = async (idshka: string) => {
+  useEffect(() => {
+    fetch("http://localhost:5000/users")
+      .then((res) => res.json())
+      .then((users) => {
+        if (users.length > 0) {
+          setBalance(users[0].wallet);
+          setUsId(users[0].id);
+        }
+      });
+  }, []);
+
+  const proccesQ = async () => {
+    if (isWorking.current === true) return;
+    const goWork = sumQueue.current.dequeue("highest");
+    if (!goWork) return;
+    isWorking.current = true;
+
+    setTimeout(async () => {
+      if (usId) {
+        await fetch(`http://localhost:5000/users/${usId}/pay`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount: goWork.priority }),
+        });
+        setBalance((prev) => prev + goWork.priority);
+      }
+      isWorking.current = false;
+      proccesQ();
+    }, 10000);
+  };
+
+  const start = async (job: Job) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/contracts/${idshka}/start`,
+        `http://localhost:5000/contracts/${job.id}/start`,
         {
           method: "POST",
         },
@@ -29,11 +65,13 @@ export default function Contracts() {
         const updated = await response.json();
         setJobs((all) =>
           all.map((one) =>
-            one.id === idshka
+            one.id === job.id
               ? { ...one, lockedTill: updated.lockedTill }
               : one,
           ),
         );
+        sumQueue.current.enqueue(job.name, job.pay);
+        proccesQ();
       }
     } catch (error) {
       console.log("womp womp", error);
@@ -61,7 +99,12 @@ export default function Contracts() {
                   <span>{job.pay}</span>
                 </div>
 
-                <button disabled={locked} onClick={() => start(job.id)}>
+                <button
+                  disabled={locked}
+                  onClick={() => {
+                    start(job);
+                  }}
+                >
                   {locked ? "Locked" : "Go to work"}
                 </button>
               </div>

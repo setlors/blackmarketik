@@ -31,7 +31,22 @@ app.get("/stocks", async (req, reply) => {
 });
 
 app.get("/users", async (req, reply) => {
-  return await prisma.users.findMany();
+  const users = await prisma.users.findMany();
+  if (users.length > 0) {
+    return users;
+  }
+
+  const mongoUsers = await mongoDb.collection<any>("users").find({}).toArray();
+  const fixedUsers = [];
+
+  for (const user of mongoUsers) {
+    if (!user.id && user._id) {
+      user.id = String(user._id);
+    }
+    fixedUsers.push(user);
+  }
+
+  return fixedUsers;
 });
 
 app.post("/contracts/:id/start", async (req, res) => {
@@ -39,10 +54,46 @@ app.post("/contracts/:id/start", async (req, res) => {
   const lockedTill = new Date(Date.now() + 3600000); //locked for an hour
 
   await mongoDb
-    .collection("contracts")
-    .updateOne({ id: id }, { $set: { lockedTill } });
+    .collection<any>("contracts")
+    .updateOne({ $or: [{ _id: id }, { id: id }] }, { $set: { lockedTill } });
 
   return { lockedTill };
+});
+
+app.post("/users/:id/start", async (req, res) => {
+  const id = (req.params as { id: string }).id;
+  const { amount } = req.body as { amount: number };
+
+  await mongoDb
+    .collection<any>("users")
+    .updateOne(
+      { $or: [{ _id: id }, { id: id }] },
+      { $inc: { wallet: amount } },
+    );
+
+  const upd = await mongoDb
+    .collection<any>("users")
+    .findOne({ $or: [{ _id: id }, { id: id }] });
+
+  return upd;
+});
+
+app.post("/users/:id/pay", async (req, res) => {
+  const id = (req.params as { id: string }).id;
+  const { amount } = req.body as { amount: number };
+
+  await mongoDb
+    .collection<any>("users")
+    .updateOne(
+      { $or: [{ _id: id }, { id: id }] },
+      { $inc: { wallet: amount } },
+    );
+
+  const ugh = await mongoDb
+    .collection<any>("users")
+    .findOne({ $or: [{ _id: id }, { id: id }] });
+
+  return ugh;
 });
 
 const start = async () => {
