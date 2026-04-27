@@ -165,6 +165,28 @@ app.post("/heists", async (req, rep) => {
 
     const random = Math.floor(Math.random() * 100);
     const success = random <= successRate;
+
+    let currInventory = [...user.inventory];
+    for (const itemId of usedItemsId) {
+      const index = currInventory.indexOf(itemId);
+      if (index !== -1) currInventory.splice(index, 1);
+    }
+
+    if (success) {
+      await mongoDb.collection<any>("users").updateOne(
+        { _id: new ObjectId(userId) },
+        {
+          $set: { inventory: currInventory },
+          $inc: { wallet: heist.pay } as any,
+        },
+      );
+    } else {
+      await mongoDb
+        .collection("users")
+        .updateOne({ _id: new ObjectId(userId) }, {
+          $set: { inventory: currInventory },
+        } as any);
+    }
   } catch (error) {
     console.error("error", error);
   }
