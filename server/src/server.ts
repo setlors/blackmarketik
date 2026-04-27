@@ -96,6 +96,31 @@ app.post("/users/:id/pay", async (req, res) => {
   return ugh;
 });
 
+app.post("/users/:id/buy", async (req, res) => {
+  const userId = (req.params as { id: string }).id;
+  const { productId, price } = req.body as { productId: string; price: number };
+
+  try {
+    const objectId = new ObjectId(userId);
+    const user = await mongoDb
+      .collection<any>("users")
+      .findOne({ _id: objectId });
+
+    if (user.wallet < price) {
+      return res.status(400).send({ error: "Not enough $$$" });
+    }
+
+    await mongoDb
+      .collection<any>("users")
+      .updateOne({ _id: objectId }, {
+        $inc: { wallet: -price },
+        $push: { inventory: productId },
+      } as any);
+  } catch (error) {
+    console.error("error w bying", error);
+  }
+});
+
 const start = async () => {
   try {
     await app.listen({ port: PORT });

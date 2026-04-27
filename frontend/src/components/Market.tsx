@@ -11,6 +11,7 @@ interface Product {
 
 export default function Market() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [usId, setUsId] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("http://localhost:5000/products")
@@ -23,8 +24,38 @@ export default function Market() {
       });
   }, []);
 
-  const handleBuy = (productId: string) => {
-    console.log("try buying", productId);
+  useEffect(() => {
+    fetch("http://localhost:5000/users")
+      .then((res) => res.json())
+      .then((users) => {
+        if (users.length > 0) {
+          setUsId(users[0]._id || users[0].id);
+        }
+      });
+  }, []);
+
+  const handleBuy = async (productId: string, price: number) => {
+    if (!usId) return;
+
+    try {
+      const response = await fetch(`http://localhost:5000/users/${usId}/buy`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId, price }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        alert(result.error);
+        return;
+      }
+
+      window.dispatchEvent(new Event("groshi"));
+      console.log("Successfully bought!");
+    } catch (error) {
+      console.log("Something went wrong", error);
+    }
   };
 
   return (
@@ -54,7 +85,7 @@ export default function Market() {
             <span>{item.price}</span>
           </div>
           <button
-            onClick={() => handleBuy(item.id)}
+            onClick={() => handleBuy(item.id, item.price)}
             className="flex items-center justify-center gap-2 px-6 sm:self-center"
           >
             <ShoppingCart size={18} />

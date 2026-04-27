@@ -64,11 +64,11 @@ export default function Inventory() {
                 </div>
               )}
 
-              <div className="h-24 w-full shrink-0 overflow-hidden rounded bg-black/40 border border-white/5 flex items-center justify-center mb-3">
+              <div className="flex h-28 w-full shrink-0 items-center justify-center overflow-hidden  sm:w-60">
                 <img
                   src={item.product.image}
                   alt={item.product.name}
-                  className="h-full w-full object-cover"
+                  className="h-24 w-24 object-contain"
                 />
               </div>
 

@@ -28,7 +28,7 @@ export default function Contracts() {
       .then((users) => {
         if (users.length > 0) {
           setBalance(users[0].wallet);
-          setUsId(users[0].id);
+          setUsId(users[0]._id || users[0].id);
         }
       });
   }, []);
