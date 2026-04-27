@@ -44,10 +44,10 @@ export default function Market() {
         body: JSON.stringify({ productId, price }),
       });
 
-      const result = await response.json();
+      const text = await response.text();
 
       if (!response.ok) {
-        alert(result.error);
+        alert(text);
         return;
       }
 
