@@ -41,3 +41,17 @@ model Users {
   inventory String[]
   portfolio String[]
 }
+
+type HeistStats {
+  combat  Int
+  hacking Int
+  stealth Int
+}
+
+model heists {
+  id            String       @id @map("_id")
+  name          String
+  pay           Int
+  difficulty    String
+  requiredStats HeistStats
+}

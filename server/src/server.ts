@@ -110,14 +110,63 @@ app.post("/users/:id/buy", async (req, res) => {
       return res.status(400).send({ error: "Not enough $$$" });
     }
 
-    await mongoDb
-      .collection<any>("users")
-      .updateOne({ _id: objectId }, {
-        $inc: { wallet: -price },
-        $push: { inventory: productId },
-      } as any);
+    await mongoDb.collection<any>("users").updateOne({ _id: objectId }, {
+      $inc: { wallet: -price },
+      $push: { inventory: productId },
+    } as any);
   } catch (error) {
     console.error("error w bying", error);
+  }
+});
+
+app.post("/heists", async (req, rep) => {
+  const { userId, heistId, usedItemsId } = req.body as {
+    userId: string;
+    heistId: string;
+    usedItemsId: string[];
+  };
+
+  try {
+    const user = await mongoDb
+      .collection<any>("users")
+      .findOne({ _id: new ObjectId(userId) });
+    const heist = await mongoDb
+      .collection<any>("heists")
+      .findOne({ _id: heistId });
+    const products = await mongoDb
+      .collection<any>("products")
+      .find({ _id: { $in: usedItemsId } })
+      .toArray();
+
+    let userStats = { combat: 0, hacking: 0, stealth: 0 };
+
+    products.forEach((item) => {
+      if (item.combat) userStats.combat += item.combat;
+      if (item.hacking) userStats.hacking += item.hacking;
+      if (item.stealth) userStats.stealth += item.stealth;
+    });
+
+    const required = heist.requiredStats;
+    const totalRequired = required.combat + required.hacking + required.stealth;
+    let totalUsefulUser = 0;
+    if (required.combat > 0) totalUsefulUser += userStats.combat;
+    if (required.hacking > 0) totalUsefulUser += userStats.hacking;
+    if (required.stealth > 0) totalUsefulUser += userStats.stealth;
+
+    let successRate = 0;
+    if (totalRequired === 0) successRate = 90;
+    else if (totalUsefulUser <= totalRequired) successRate = 90;
+    else if (totalUsefulUser > 0) {
+      successRate = Math.floor((totalUsefulUser / totalRequired) * 100);
+      if (successRate < 5) successRate = 5;
+    } else {
+      successRate = 5;
+    }
+
+    const random = Math.floor(Math.random() * 100);
+    const success = random <= successRate;
+  } catch (error) {
+    console.error("error", error);
   }
 });
 
