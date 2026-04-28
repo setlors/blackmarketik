@@ -45,6 +45,19 @@ export default function Inventory() {
       }
     };
     fetchInv();
+
+    const moneyUpd = () => fetchInv();
+    const clearQ = () => {
+      setQueue([]);
+      window.dispatchEvent(new CustomEvent("heistItemsUpd", { detail: [] }));
+    };
+    window.addEventListener("groshi", moneyUpd);
+    window.addEventListener("clearQueue", clearQ);
+
+    return () => {
+      window.removeEventListener("groshi", moneyUpd);
+      window.removeEventListener("clearQueue", clearQ);
+    };
   }, []);
 
   const itemQ = (itemId: string) => {

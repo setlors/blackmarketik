@@ -21,21 +21,23 @@ export default function Topbar() {
   const [heist, setHeist] = useState<Heist | null>(null);
   const [heistItems, setHeistItems] = useState<string[]>([]);
 
+  const loadHeist = () => {
+    fetch("http://localhost:5000/heists")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          const index = Math.floor(Math.random() * data.length);
+          setHeist(data[index]);
+        } else setHeist(data ?? null);
+      })
+      .catch(() => setHeist(null));
+  };
+
   useEffect(() => {
     const loadUser = () => {
       fetch("http://localhost:5000/users")
         .then((res) => res.json())
         .then((data) => setUser(data));
-    };
-
-    const loadHeist = () => {
-      fetch("http://localhost:5000/heists")
-        .then((res) => res.json())
-        .then((data) => {
-          const next = Array.isArray(data) ? data[0] : data;
-          setHeist(next ?? null);
-        })
-        .catch(() => setHeist(null));
     };
 
     loadUser();
@@ -78,6 +80,10 @@ export default function Topbar() {
       });
       const result = await response.json();
       alert(result.message);
+      window.dispatchEvent(new Event("groshi"));
+      window.dispatchEvent(new Event("clearQueue"));
+      loadHeist();
+      setHeistItems([]);
     } catch (error) {
       console.error("Something went wrong when executing mission", error);
     }
