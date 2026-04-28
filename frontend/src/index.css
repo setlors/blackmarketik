@@ -63,7 +63,7 @@
   }
 
   button {
-    @apply bg-pink-hot border-none py-2 px-5 rounded-full text-white font-bold cursor-pointer transition-all duration-200 hover:bg-pink-light hover:text-bg-dark disabled:opacity-50;
+    @apply bg-pink-300 border-none py-2 px-5 rounded-md text-white font-bold cursor-pointer transition-all duration-200 hover:bg-pink-400 hover:text-bg-dark disabled:opacity-50;
   }
 
   .item-card {

@@ -58,7 +58,7 @@ export default function Inventory() {
       newQ = [...queue, itemId];
     }
     setQueue(newQ);
-    window.dispatchEvent(new CustomEvent("inventoryQueue", { detail: newQ }));
+    window.dispatchEvent(new CustomEvent("heistItemsUpd", { detail: newQ }));
   };
 
   return (
@@ -75,7 +75,7 @@ export default function Inventory() {
               className="relative flex flex-col rounded-lg border border-pink-hot/20 bg-card-dark/50 p-3 hover:border-pink-hot/50 transition-colors"
             >
               {item.count > 1 && (
-                <div className="absolute top-2 right-2 bg-pink-hot text-white text-xs font-bold px-2 py-1 rounded shadow-md z-10">
+                <div className="absolute top-2 right-2 bg-pink-300 text-white text-xs font-bold px-2 py-1 rounded shadow-md z-10">
                   x{item.count}
                 </div>
               )}
@@ -96,7 +96,7 @@ export default function Inventory() {
 
               <button
                 onClick={() => itemQ(item.product.id)}
-                className={`mt-2 px-4 py-1 rounded font-bold ${queue.includes(item.product.id) ? "bg-pink-hot text-white border-2 border-white" : "bg-black text-pink-hot border-2 border-pink-hot"}`}
+                className={`mt-2 px-4 py-1 rounded font-bold ${queue.includes(item.product.id) ? "bg-pink-300 text-white border-2 border-white" : "bg-black text-pink-hot border-2 border-pink-hot"}`}
               >
                 {queue.includes(item.product.id) ? "Picked" : "Pick"}
               </button>

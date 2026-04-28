@@ -80,7 +80,7 @@ export default function Market() {
               {item.description}
             </p>
           </div>
-          <div className="flex items-center gap-1 rounded-full border border-pink-hot/30 bg-pink-hot/10 px-4 py-2 text-lg font-black text-pink-light sm:self-center">
+          <div className="flex items-center gap-1 rounded border border-pink-hot/30 bg-pink-hot/10 px-4 py-1.5 text-lg font-black text-pink-light sm:self-center">
             <DollarSign size={20} />
             <span>{item.price}</span>
           </div>

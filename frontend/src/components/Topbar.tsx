@@ -19,6 +19,7 @@ interface Heist {
 export default function Topbar() {
   const [user, setUser] = useState<User[]>([]);
   const [heist, setHeist] = useState<Heist | null>(null);
+  const [heistItems, setHeistItems] = useState<string[]>([]);
 
   useEffect(() => {
     const loadUser = () => {
@@ -39,9 +40,48 @@ export default function Topbar() {
 
     loadUser();
     loadHeist();
+
+    const qUpd = (event: Event) => {
+      const customEvent = event as CustomEvent<string[]>;
+      setHeistItems(customEvent.detail ?? []);
+    };
+
     window.addEventListener("groshi", loadUser);
-    return () => window.removeEventListener("groshi", loadUser);
+    window.addEventListener("heistItemsUpd", qUpd);
+    return () => {
+      window.removeEventListener("groshi", loadUser);
+      window.removeEventListener("heistItemsUpd", qUpd);
+    };
   }, []);
+
+  const execute = async () => {
+    if (heistItems.length === 0) {
+      alert("You have to pick at least 1 item");
+      return;
+    }
+
+    const currentUser = user[0];
+    if (!currentUser || !heist) {
+      alert("Missing user or heist data");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:5000/heists", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: currentUser.id,
+          heistId: heist.id,
+          usedItemsId: heistItems,
+        }),
+      });
+      const result = await response.json();
+      alert(result.message);
+    } catch (error) {
+      console.error("Something went wrong when executing mission", error);
+    }
+  };
 
   const current = user[0];
 
@@ -59,13 +99,24 @@ export default function Topbar() {
       </div>
 
       {heist && (
-        <div className="hidden sm:flex items-center gap-3 px-6 py-2 bg-pink-hot/10 border border-pink-hot/50 rounded-full">
-          <span className="text-sm font-bold text-white tracking-wider">
-            NEXT HEIST: <span className="text-pink-light">{heist.name}</span>
-          </span>
-          <span className="text-xs font-black text-pink-hot bg-black/50 px-2 py-1 rounded">
-            ${heist.pay} • {heist.difficulty?.toUpperCase()}
-          </span>
+        <div className="hidden sm:flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-3 px-6 py-2 bg-pink-hot/10 border border-pink-hot/50 rounded">
+            <span className="text-sm font-bold text-white tracking-wider">
+              NEXT HEIST:{" "}
+              <span className="text-pink-light">
+                {heist.name?.toUpperCase()}
+              </span>
+            </span>
+            <span className="text-xs font-black text-white tracking-wider">
+              ${heist.pay} • {heist.difficulty?.toUpperCase()}
+            </span>
+          </div>
+          <button
+            onClick={execute}
+            className="flex items-center gap-3 px-5 py-1.5 rounded cursor-pointer transition-all"
+          >
+            Execute
+          </button>
         </div>
       )}
 

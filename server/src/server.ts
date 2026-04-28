@@ -159,7 +159,7 @@ app.post("/heists", async (req, rep) => {
 
     let successRate = 0;
     if (totalRequired === 0) successRate = 90;
-    else if (totalUsefulUser <= totalRequired) successRate = 90;
+    else if (totalUsefulUser >= totalRequired) successRate = 90;
     else if (totalUsefulUser > 0) {
       successRate = Math.floor((totalUsefulUser / totalRequired) * 100);
       if (successRate < 5) successRate = 5;
@@ -184,12 +184,14 @@ app.post("/heists", async (req, rep) => {
           $inc: { wallet: heist.pay } as any,
         },
       );
+      return rep.send({ success: true, message: "SUCCESS!!" });
     } else {
       await mongoDb
         .collection("users")
         .updateOne({ _id: new ObjectId(userId) }, {
           $set: { inventory: currInventory },
         } as any);
+      return rep.send({ success: false, message: "Gl serving jail time" });
     }
   } catch (error) {
     console.error("error", error);
