@@ -198,6 +198,25 @@ app.post("/heists", async (req, rep) => {
   }
 });
 
+async function* heistHistory(db: any) {
+  const stream = db.collection("history").find({});
+  for await (const heistLog of stream) {
+    yield heistLog;
+  }
+}
+
+async function* filterSuccessful(heistStream: AsyncIterable<any>) {
+  for await (const log of heistStream) {
+    if (!log.success) continue;
+    yield {
+      heistId: log.heistId,
+      userId: log.userId,
+      profit: log.pay,
+      difficulty: log.difficulty,
+    };
+  }
+}
+
 const start = async () => {
   try {
     await app.listen({ port: PORT });

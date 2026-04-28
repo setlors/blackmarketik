@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ShoppingBag, TrendingUp, Package, Briefcase } from "lucide-react";
+import { ShoppingBag, Package, Briefcase } from "lucide-react";
 
 export default function Sidebar() {
   return (
@@ -11,12 +11,6 @@ export default function Sidebar() {
             <Link to="/market" className="flex items-center gap-3 active">
               <ShoppingBag size={20} />
               <span>Market</span>
-            </Link>
-          </li>
-          <li>
-            <Link to="/stocks" className="flex items-center gap-3">
-              <TrendingUp size={20} />
-              <span>Stocks</span>
             </Link>
           </li>
           <li>
