@@ -14,6 +14,8 @@ interface Item {
 
 export default function Inventory() {
   const [items, setItems] = useState<Item[]>([]);
+  const [queue, setQueue] = useState<string[]>([]);
+
   useEffect(() => {
     const fetchInv = async () => {
       try {
@@ -44,6 +46,20 @@ export default function Inventory() {
     };
     fetchInv();
   }, []);
+
+  const itemQ = (itemId: string) => {
+    let newQ;
+    if (queue.includes(itemId)) {
+      newQ = queue.filter((id) => id !== itemId);
+    } else if (queue.length >= 2) {
+      alert("You can take up to 2 items");
+      return;
+    } else {
+      newQ = [...queue, itemId];
+    }
+    setQueue(newQ);
+    window.dispatchEvent(new CustomEvent("inventoryQueue", { detail: newQ }));
+  };
 
   return (
     <div className="flex-1 overflow-y-auto p-4 max-w-4xl mx-auto w-full">
@@ -77,6 +93,13 @@ export default function Inventory() {
                   {item.product.name}
                 </h2>
               </div>
+
+              <button
+                onClick={() => itemQ(item.product.id)}
+                className={`mt-2 px-4 py-1 rounded font-bold ${queue.includes(item.product.id) ? "bg-pink-hot text-white border-2 border-white" : "bg-black text-pink-hot border-2 border-pink-hot"}`}
+              >
+                {queue.includes(item.product.id) ? "Picked" : "Pick"}
+              </button>
             </div>
           ))}
         </div>

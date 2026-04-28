@@ -30,6 +30,10 @@ app.get("/stocks", async (req, reply) => {
   return await prisma.stocks.findMany();
 });
 
+app.get("/heists", async (req, reply) => {
+  return await prisma.heists.findMany();
+});
+
 app.get("/users", async (req, reply) => {
   const users = await prisma.users.findMany();
   if (users.length > 0) {
