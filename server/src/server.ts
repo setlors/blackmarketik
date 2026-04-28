@@ -3,6 +3,7 @@ import cors from "@fastify/cors";
 import { PrismaClient } from "./generated/prisma";
 import { MongoClient, ObjectId } from "mongodb";
 import "dotenv/config";
+import { error } from "node:console";
 
 const app = fastify({ logger: true });
 const prisma = new PrismaClient();
@@ -184,6 +185,14 @@ app.post("/heists", async (req, rep) => {
           $inc: { wallet: heist.pay } as any,
         },
       );
+      await mongoDb.collection("history").insertOne({
+        userId: userId,
+        heistId: heistId,
+        success: success,
+        pay: heist.pay,
+        difficulty: heist.difficulty,
+        at: new Date(),
+      });
       return rep.send({ success: true, message: "SUCCESS!!" });
     } else {
       await mongoDb
@@ -216,6 +225,27 @@ async function* filterSuccessful(heistStream: AsyncIterable<any>) {
     };
   }
 }
+
+app.get("/analytics/successful-heists", async (req, rep) => {
+  try {
+    const source = heistHistory(mongoDb);
+    const filtered = filterSuccessful(source);
+
+    let totalSuccessful = 0;
+    let totalMoney = 0;
+    for await (const heist of filtered) {
+      totalSuccessful++;
+      totalMoney += heist.profit;
+    }
+    return rep.send({
+      message: "Analytics regarding successful heists",
+      data: totalSuccessful,
+      totalMoney,
+    });
+  } catch (error) {
+    console.error("trouble with analytics", error);
+  }
+});
 
 const start = async () => {
   try {
