@@ -4,6 +4,7 @@ import { PrismaClient } from "./generated/prisma";
 import { MongoClient, ObjectId } from "mongodb";
 import "dotenv/config";
 import { error } from "node:console";
+import jwt from "@fastify/jwt";
 
 const app = fastify({ logger: true });
 const prisma = new PrismaClient();
@@ -18,6 +19,7 @@ const mongoDb = mongoClient.db();
 const PORT = 5000;
 
 app.register(cors, { origin: true });
+app.register(jwt, { secret: "blackmarketik-potuzhny-key" });
 
 app.get("/contracts", async (req, reply) => {
   return await prisma.contracts.findMany();
@@ -52,6 +54,24 @@ app.get("/users", async (req, reply) => {
   }
 
   return fixedUsers;
+});
+
+app.post("/login", async (req, res) => {
+  const { username, password } = req.body as any;
+  let user = await mongoDb.collection<any>("users").findOne({ username });
+  if (!user) {
+    await mongoDb.collection("users").insertOne({
+      username,
+      password,
+      wallet: 1000,
+      inventory: [],
+    });
+    user = await mongoDb.collection<any>("users").findOne({ username });
+  } else if (user.password !== password) {
+    return res.status(401).send({ error: "Wrong password" });
+  }
+  const token = app.jwt.sign({ userId: user._id });
+  return res.send({ token, userId: user._id, username: user.username });
 });
 
 app.post("/contracts/:id/start", async (req, res) => {
