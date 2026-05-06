@@ -3,7 +3,6 @@ import cors from "@fastify/cors";
 import { PrismaClient } from "./generated/prisma";
 import { MongoClient, ObjectId } from "mongodb";
 import "dotenv/config";
-import { error } from "node:console";
 import jwt from "@fastify/jwt";
 
 const app = fastify({ logger: true });
@@ -58,12 +57,22 @@ app.get("/users", async (req, res) => {
 
 app.post("/login", async (req, res) => {
   const { username, password } = req.body as any;
+  if (!username || username.length < 6) {
+    return res
+      .status(400)
+      .send({ error: "Username must be at least 6 characters" });
+  }
+  if (!password || password.length < 6) {
+    return res
+      .status(400)
+      .send({ error: "Password must be at least 6 characters" });
+  }
   let user = await mongoDb.collection<any>("users").findOne({ username });
   if (!user) {
     await mongoDb.collection("users").insertOne({
       username,
       password,
-      wallet: 1000,
+      wallet: 150,
       inventory: [],
     });
     user = await mongoDb.collection<any>("users").findOne({ username });
@@ -72,6 +81,29 @@ app.post("/login", async (req, res) => {
   }
   const token = app.jwt.sign({ userId: user._id });
   return res.send({ token, userId: user._id, username: user.username });
+});
+
+app.get("/profil", async (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).send({ error: "No token provided" });
+
+  try {
+    const token = authHeader.replace("Bearer ", "");
+    const decoded = app.jwt.verify(token) as { userId: string };
+    const user = await mongoDb
+      .collection<any>("users")
+      .findOne({ _id: new ObjectId(decoded.userId) });
+
+    if (!user) return res.status(404).send({ error: "User not found" });
+    return res.send({
+      id: user._id.toString(),
+      username: user.username,
+      wallet: user.wallet,
+      inventory: user.inventory || [],
+    });
+  } catch (error) {
+    return res.status(401).send({ error: "Invalid token" });
+  }
 });
 
 app.post("/contracts/:id/start", async (req, res) => {
@@ -204,9 +236,11 @@ app.post("/heists", async (req, res) => {
     const random = Math.floor(Math.random() * 100);
     const success = random <= successRate;
 
-    let currInventory = [...user.inventory];
+    let currInventory = [...(user.inventory || [])];
     for (const itemId of usedItemsId) {
-      const index = currInventory.indexOf(itemId);
+      const index = currInventory.findIndex(
+        (savedId) => savedId.toString() === itemId.toString(),
+      );
       if (index !== -1) currInventory.splice(index, 1);
     }
 

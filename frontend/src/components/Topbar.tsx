@@ -23,7 +23,7 @@ export default function Topbar() {
   );
   const [loginName, setLoginName] = useState("");
   const [loginPass, setLoginPass] = useState("");
-  const [user, setUser] = useState<User[]>([]);
+  const [user, setUser] = useState<User | null>(null);
   const [heist, setHeist] = useState<Heist | null>(null);
   const [heistItems, setHeistItems] = useState<string[]>([]);
 
@@ -52,7 +52,9 @@ export default function Topbar() {
   const logout = () => {
     localStorage.removeItem("bm_token");
     setIsLogged(false);
-    setUser([]);
+    setUser(null);
+    setHeistItems([]);
+    window.location.reload();
   };
 
   const loadHeist = () => {
@@ -71,9 +73,13 @@ export default function Topbar() {
     if (!isLogged) return;
 
     const loadUser = () => {
-      apiFetch("/users")
-        .then((res) => res.json())
-        .then((data) => setUser(data));
+      apiFetch(`/profil?t=${Date.now()}`)
+        .then((res) => {
+          if (!res.ok) throw new Error("Not logged in");
+          return res.json();
+        })
+        .then((data) => setUser(data))
+        .catch(() => setUser(null));
     };
     loadUser();
     loadHeist();
@@ -97,7 +103,7 @@ export default function Topbar() {
       return;
     }
 
-    const currentUser = user[0];
+    const currentUser = user;
     if (!currentUser || !heist) {
       alert("Missing user or heist data");
       return;
@@ -122,7 +128,6 @@ export default function Topbar() {
     }
   };
 
-  const current = user[0];
   if (!isLogged) {
     return (
       <div className="topbar flex items-center justify-end w-full gap-6 p-4">
@@ -157,7 +162,7 @@ export default function Topbar() {
     <div className="topbar flex items-center justify-between w-full gap-6 p-4">
       <div className="balance flex items-center gap-2 text-pink-hot font-bold text-lg">
         <DollarSign size={24} />
-        <span>{current ? current.wallet : 0}</span>
+        <span>{user ? user.wallet : 0}</span>
       </div>
 
       {heist && (
@@ -188,7 +193,7 @@ export default function Topbar() {
           </div>
           <div>
             <p className="text-sm font-semibold text-text-light">
-              {current ? current.username : "User"}
+              {user ? user.username : "User"}
             </p>
           </div>
         </div>

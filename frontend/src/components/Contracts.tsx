@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { DollarSign } from "lucide-react";
 import { BiQueue } from "../process/queue";
+import { apiFetch } from "../process/api";
 
 interface Job {
   id: string;
@@ -17,20 +18,22 @@ export default function Contracts() {
   const isWorking = useRef(false);
 
   useEffect(() => {
-    fetch("http://localhost:5000/contracts")
+    apiFetch("/contracts")
       .then((res) => res.json())
       .then((data) => setJobs(data));
   }, []);
 
   useEffect(() => {
-    fetch("http://localhost:5000/users")
-      .then((res) => res.json())
-      .then((users) => {
-        if (users.length > 0) {
-          setBalance(users[0].wallet);
-          setUsId(users[0]._id || users[0].id);
-        }
-      });
+    apiFetch(`/profil?t=${Date.now()}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Not logged in");
+        return res.json();
+      })
+      .then((user) => {
+        setBalance(user.wallet);
+        setUsId(user.id);
+      })
+      .catch(() => setUsId(null));
   }, []);
 
   const proccesQ = async () => {
@@ -41,9 +44,8 @@ export default function Contracts() {
 
     setTimeout(async () => {
       if (usId) {
-        await fetch(`http://localhost:5000/users/${usId}/pay`, {
+        await apiFetch(`/users/${usId}/pay`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ amount: goWork.priority }),
         });
         setBalance((prev) => prev + goWork.priority);
@@ -56,12 +58,10 @@ export default function Contracts() {
 
   const start = async (job: Job) => {
     try {
-      const response = await fetch(
-        `http://localhost:5000/contracts/${job.id}/start`,
-        {
-          method: "POST",
-        },
-      );
+      const response = await apiFetch(`/contracts/${job.id}/start`, {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
       if (response.ok) {
         const updated = await response.json();
         setJobs((all) =>
@@ -103,6 +103,10 @@ export default function Contracts() {
                 <button
                   disabled={locked}
                   onClick={() => {
+                    if (!usId) {
+                      alert("Login first");
+                      return;
+                    }
                     start(job);
                   }}
                 >

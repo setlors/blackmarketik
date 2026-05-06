@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { DollarSign, ShoppingCart } from "lucide-react";
+import { apiFetch } from "../process/api";
 
 interface Product {
   id: string;
@@ -14,7 +15,7 @@ export default function Market() {
   const [usId, setUsId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("http://localhost:5000/products")
+    apiFetch("/products")
       .then((res) => res.json())
       .then((data) => {
         setProducts(data);
@@ -25,22 +26,25 @@ export default function Market() {
   }, []);
 
   useEffect(() => {
-    fetch("http://localhost:5000/users")
-      .then((res) => res.json())
-      .then((users) => {
-        if (users.length > 0) {
-          setUsId(users[0]._id || users[0].id);
-        }
-      });
+    apiFetch(`/profil?t=${Date.now()}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Not logged in");
+        return res.json();
+      })
+      .then((user) => {
+        setUsId(user.id);
+      })
+      .catch(() => setUsId(null));
   }, []);
 
   const handleBuy = async (productId: string, price: number) => {
-    if (!usId) return;
-
+    if (!usId) {
+      alert("Login first");
+      return;
+    }
     try {
-      const response = await fetch(`http://localhost:5000/users/${usId}/buy`, {
+      const response = await apiFetch(`/users/${usId}/buy`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ productId, price }),
       });
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { apiFetch } from "../process/api";
 
 interface Product {
   id: string;
@@ -19,14 +20,17 @@ export default function Inventory() {
   useEffect(() => {
     const fetchInv = async () => {
       try {
-        const [usersRes, prodsRes] = await Promise.all([
-          fetch("http://localhost:5000/users"),
+        const [userRes, prodsRes] = await Promise.all([
+          apiFetch(`/profil?t=${Date.now()}`),
           fetch("http://localhost:5000/products"),
         ]);
-        const users = await usersRes.json();
-        const allProds: Product[] = await prodsRes.json();
-        const curr = users[0];
+        if (!userRes.ok) {
+          setItems([]);
+          return;
+        }
 
+        const curr = await userRes.json();
+        const allProds: Product[] = await prodsRes.json();
         if (curr && curr.inventory) {
           const uniqueId = Array.from(new Set(curr.inventory));
           const allItems = uniqueId.map((id) => {
@@ -39,6 +43,8 @@ export default function Inventory() {
           setItems(
             allItems.filter((item) => item.product !== undefined) as Item[],
           );
+        } else {
+          setItems([]);
         }
       } catch (error) {
         console.log("error", error);

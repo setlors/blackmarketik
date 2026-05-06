@@ -8,7 +8,7 @@ export default function Sidebar() {
       <nav>
         <ul>
           <li>
-            <Link to="/market" className="flex items-center gap-3 active">
+            <Link to="/market" className="flex items-center gap-3">
               <ShoppingBag size={20} />
               <span>Market</span>
             </Link>
