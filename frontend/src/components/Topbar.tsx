@@ -1,5 +1,6 @@
-import { User as UserIcon, DollarSign } from "lucide-react";
+import { User as UserIcon, DollarSign, LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
+import { apiFetch } from "../process/api";
 
 interface User {
   id: string;
@@ -17,12 +18,45 @@ interface Heist {
 }
 
 export default function Topbar() {
+  const [isLogged, setIsLogged] = useState(
+    () => !!localStorage.getItem("bm_token"),
+  );
+  const [loginName, setLoginName] = useState("");
+  const [loginPass, setLoginPass] = useState("");
   const [user, setUser] = useState<User[]>([]);
   const [heist, setHeist] = useState<Heist | null>(null);
   const [heistItems, setHeistItems] = useState<string[]>([]);
 
+  const handleLogin = async (e: React.SyntheticEvent) => {
+    e.preventDefault();
+    try {
+      const res = await apiFetch("/login", {
+        method: "POST",
+        body: JSON.stringify({ username: loginName, password: loginPass }),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        localStorage.setItem("bm_token", data.token);
+        setIsLogged(true);
+        setLoginName("");
+        setLoginPass("");
+      } else {
+        alert(data.error || "Login error");
+      }
+    } catch (err) {
+      console.error("Login error", err);
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem("bm_token");
+    setIsLogged(false);
+    setUser([]);
+  };
+
   const loadHeist = () => {
-    fetch("http://localhost:5000/heists")
+    apiFetch("/heists")
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -34,12 +68,13 @@ export default function Topbar() {
   };
 
   useEffect(() => {
+    if (!isLogged) return;
+
     const loadUser = () => {
-      fetch("http://localhost:5000/users")
+      apiFetch("/users")
         .then((res) => res.json())
         .then((data) => setUser(data));
     };
-
     loadUser();
     loadHeist();
 
@@ -54,7 +89,7 @@ export default function Topbar() {
       window.removeEventListener("groshi", loadUser);
       window.removeEventListener("heistItemsUpd", qUpd);
     };
-  }, []);
+  }, [isLogged]);
 
   const execute = async () => {
     if (heistItems.length === 0) {
@@ -69,11 +104,9 @@ export default function Topbar() {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/heists", {
+      const response = await apiFetch("/heists", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: currentUser.id,
           heistId: heist.id,
           usedItemsId: heistItems,
         }),
@@ -90,18 +123,41 @@ export default function Topbar() {
   };
 
   const current = user[0];
-
+  if (!isLogged) {
+    return (
+      <div className="topbar flex items-center justify-end w-full gap-6 p-4">
+        <form onSubmit={handleLogin} className="flex items-center gap-3">
+          <input
+            type="text"
+            placeholder="Username"
+            value={loginName}
+            onChange={(e) => setLoginName(e.target.value)}
+            className="px-3 py-1.5 bg-gray-900 border border-gray-700 text-white text-sm rounded outline-none focus:border-pink-hot transition-colors"
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={loginPass}
+            onChange={(e) => setLoginPass(e.target.value)}
+            className="px-3 py-1.5 bg-gray-900 border border-gray-700 text-white text-sm rounded outline-none focus:border-pink-hot transition-colors"
+            required
+          />
+          <button
+            type="submit"
+            className="px-4 py-1.5 bg-pink-hot/20 text-pink-hot border border-pink-hot/50 hover:bg-pink-hot hover:text-white rounded text-sm font-bold transition-all cursor-pointer"
+          >
+            LOGIN
+          </button>
+        </form>
+      </div>
+    );
+  }
   return (
-    <div className="topbar flex items-center gap-6">
-      <div className="userinfo">
-        <div className="usimg">
-          <UserIcon size={20} />
-        </div>
-        <div>
-          <p className="text-sm font-semibold text-text-light">
-            {current ? current.username : "User"}
-          </p>
-        </div>
+    <div className="topbar flex items-center justify-between w-full gap-6 p-4">
+      <div className="balance flex items-center gap-2 text-pink-hot font-bold text-lg">
+        <DollarSign size={24} />
+        <span>{current ? current.wallet : 0}</span>
       </div>
 
       {heist && (
@@ -125,10 +181,24 @@ export default function Topbar() {
           </button>
         </div>
       )}
-
-      <div className="balance flex items-center gap-2 text-pink-hot font-bold text-lg">
-        <DollarSign size={24} />
-        <span>{current ? current.wallet : 0}</span>
+      <div className="flex items-center gap-4">
+        <div className="userinfo flex items-center gap-3">
+          <div className="usimg text-text-light">
+            <UserIcon size={20} />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-text-light">
+              {current ? current.username : "User"}
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={logout}
+          title="Logout"
+          className="text-text-light hover:text-pink-hot transition-colors cursor-pointer"
+        >
+          <LogOut size={18} />
+        </button>
       </div>
     </div>
   );
