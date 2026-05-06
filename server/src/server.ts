@@ -4,6 +4,18 @@ import { PrismaClient } from "./generated/prisma";
 import { MongoClient, ObjectId } from "mongodb";
 import "dotenv/config";
 import jwt from "@fastify/jwt";
+import { Log } from "./logger";
+
+class Service {
+  @Log("INFO")
+  async checkPurchase(wallet: number, price: number) {
+    if (wallet < price) {
+      throw new Error("Not enough $$$");
+    }
+    return "Approved!";
+  }
+}
+const services = new Service();
 
 const app = fastify({ logger: true });
 const prisma = new PrismaClient();
@@ -162,17 +174,16 @@ app.post("/users/:id/buy", async (req, res) => {
     const user = await mongoDb
       .collection<any>("users")
       .findOne({ _id: objectId });
-
-    if (user.wallet < price) {
-      return res.status(400).send({ error: "Not enough $$$" });
-    }
+    await services.checkPurchase(user.wallet, price);
 
     await mongoDb.collection<any>("users").updateOne({ _id: objectId }, {
       $inc: { wallet: -price },
       $push: { inventory: productId },
     } as any);
+
+    return res.send({ message: "Success" });
   } catch (error) {
-    console.error("error w bying", error);
+    return res.status(400).send({ error: (error as Error).message });
   }
 });
 
