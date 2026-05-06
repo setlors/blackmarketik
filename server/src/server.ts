@@ -21,23 +21,23 @@ const PORT = 5000;
 app.register(cors, { origin: true });
 app.register(jwt, { secret: "blackmarketik-potuzhny-key" });
 
-app.get("/contracts", async (req, reply) => {
+app.get("/contracts", async (req, res) => {
   return await prisma.contracts.findMany();
 });
 
-app.get("/products", async (req, reply) => {
+app.get("/products", async (req, res) => {
   return await prisma.products.findMany();
 });
 
-app.get("/stocks", async (req, reply) => {
+app.get("/stocks", async (req, res) => {
   return await prisma.stocks.findMany();
 });
 
-app.get("/heists", async (req, reply) => {
+app.get("/heists", async (req, res) => {
   return await prisma.heists.findMany();
 });
 
-app.get("/users", async (req, reply) => {
+app.get("/users", async (req, res) => {
   const users = await prisma.users.findMany();
   if (users.length > 0) {
     return users;
@@ -144,9 +144,22 @@ app.post("/users/:id/buy", async (req, res) => {
   }
 });
 
-app.post("/heists", async (req, rep) => {
-  const { userId, heistId, usedItemsId } = req.body as {
-    userId: string;
+app.post("/heists", async (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).send({ error: "no token" });
+  }
+
+  let userId: string;
+  try {
+    const token = authHeader.replace("Bearer ", "");
+    const decoded = app.jwt.verify(token) as { userId: string };
+    userId = decoded.userId;
+  } catch (error) {
+    return res.status(401).send({ error: "Invalid token" });
+  }
+
+  const { heistId, usedItemsId } = req.body as {
     heistId: string;
     usedItemsId: string[];
   };
@@ -213,14 +226,14 @@ app.post("/heists", async (req, rep) => {
         difficulty: heist.difficulty,
         at: new Date(),
       });
-      return rep.send({ success: true, message: "SUCCESS!!" });
+      return res.send({ success: true, message: "SUCCESS!!" });
     } else {
       await mongoDb
         .collection("users")
         .updateOne({ _id: new ObjectId(userId) }, {
           $set: { inventory: currInventory },
         } as any);
-      return rep.send({ success: false, message: "Gl serving jail time" });
+      return res.send({ success: false, message: "Gl serving jail time" });
     }
   } catch (error) {
     console.error("error", error);
@@ -246,7 +259,7 @@ async function* filterSuccessful(heistStream: AsyncIterable<any>) {
   }
 }
 
-app.get("/analytics/successful-heists", async (req, rep) => {
+app.get("/analytics/successful-heists", async (req, res) => {
   try {
     const source = heistHistory(mongoDb);
     const filtered = filterSuccessful(source);
@@ -257,7 +270,7 @@ app.get("/analytics/successful-heists", async (req, rep) => {
       totalSuccessful++;
       totalMoney += heist.profit;
     }
-    return rep.send({
+    return res.send({
       message: "Analytics regarding successful heists",
       data: totalSuccessful,
       totalMoney,
