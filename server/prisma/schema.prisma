@@ -26,13 +26,6 @@ model products {
   stealth     Int
 }
 
-model stocks {
-  id         String @id @map("_id")
-  basePrice  Int
-  name       String
-  volatility Float
-}
-
 model Users {
   id String @id @map("_id")
   username String @unique

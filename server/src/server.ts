@@ -3,6 +3,7 @@ import cors from "@fastify/cors";
 import { PrismaClient } from "./generated/prisma";
 import { MongoClient, ObjectId } from "mongodb";
 import "dotenv/config";
+import { memoize } from "./memoize";
 import jwt from "@fastify/jwt";
 import { Log } from "./logger";
 
@@ -32,24 +33,44 @@ const PORT = 5000;
 app.register(cors, { origin: true });
 app.register(jwt, { secret: "blackmarketik-potuzhny-key" });
 
-app.get("/contracts", async (req, res) => {
+//using memoization func to fetch stuff from database once a minute
+const fetchJobsFromDB = async () => {
   return await prisma.contracts.findMany();
+};
+const jobsCached = memoize(fetchJobsFromDB, 5, "Time-Based", 60000);
+
+const fetchProdsFromDB = async () => {
+  return await prisma.products.findMany();
+};
+const prodsCached = memoize(fetchProdsFromDB, 5, "Time-Based", 60000);
+
+const fetchHeistsFromDB = async () => {
+  return await prisma.heists.findMany();
+};
+const heistsCached = memoize(fetchHeistsFromDB, 5, "Time-Based", 60000);
+
+const fetchUsersFromDB = async () => {
+  return await prisma.users.findMany();
+};
+const usersCached = memoize(fetchUsersFromDB, 5, "Time-Based", 60000);
+
+app.get("/contracts", async (req, res) => {
+  const contracts = await jobsCached();
+  return contracts;
 });
 
 app.get("/products", async (req, res) => {
-  return await prisma.products.findMany();
-});
-
-app.get("/stocks", async (req, res) => {
-  return await prisma.stocks.findMany();
+  const products = await prodsCached();
+  return products;
 });
 
 app.get("/heists", async (req, res) => {
-  return await prisma.heists.findMany();
+  const heists = await heistsCached();
+  return heists;
 });
 
 app.get("/users", async (req, res) => {
-  const users = await prisma.users.findMany();
+  const users = await usersCached();
   if (users.length > 0) {
     return users;
   }
