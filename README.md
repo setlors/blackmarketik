@@ -27,18 +27,13 @@ Basically an economy sim, where players manage money, buy specialized gear from 
 </div>
 
 ## 👾 Functionalities
-* **User Accounts**
-Players create an account (or log in) and start with $150
-* **The Marketplace**
-Browsing items and buying them (this adds items to their inventories)
-* **The Inventory**
-Players can view their purchases and choose up to 2 items as their gear for the next heist
-* **Contracts (passive income)**
-Once started, a job gets locked for 1 hour, while the payout is added to a queue and processed automatically
-* **Heists**
-The heist is selected randomly. When player triggers mechanic, the server calculates success rate based on the stats of the items equipped (Combat, Hacking, Stealth) and heist's difficulty. Used items are removed from inventory and successful heists bring a fat paycheck <3
+* **User Accounts**: players create an account (or log in) and start with $150
+* **The Marketplace**: browsing items and buying them (this adds items to their inventories)
+* **The Inventory**: players can view their purchases and choose up to 2 items as their gear for the next heist
+* **Contracts (passive income)**: once started, a job gets locked for 1 hour, while the payout is added to a queue and processed automatically
+* **Heists**: the heist is selected randomly. When player triggers mechanic, the server calculates success rate based on the stats of the items equipped (Combat, Hacking, Stealth) and heist's difficulty. Used items are removed from inventory and successful heists bring a fat paycheck <3
 
-## ❗ There are also all OP labs implemented:
+## ❗ There are also all of OP labs implemented:
 
 * **Random generator** for random heist displayed
 * **Memoization function:** used to optimize database, now the server contacts with DB once a minute
@@ -57,7 +52,7 @@ Phew...
 git clone https://github.com/setlors/blackmarketik.git
 ```
 1. Set up the Environment Variables:
-create a .env file inside of server folder and add your MongoDB connection string inside it: DATABASE_URL="your_connection_string"
+create a .env file inside of server folder and add your MongoDB connection string inside it: `DATABASE_URL="your_connection_string"`
 
 2. Set up the server:
 
