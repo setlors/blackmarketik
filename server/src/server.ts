@@ -133,6 +133,7 @@ app.get("/profil", async (req, res) => {
       username: user.username,
       wallet: user.wallet,
       inventory: user.inventory || [],
+      lockedJobs: user.lockedJobs || {},
     });
   } catch (error) {
     return res.status(401).send({ error: "Invalid token" });
@@ -140,12 +141,16 @@ app.get("/profil", async (req, res) => {
 });
 
 app.post("/contracts/:id/start", async (req, res) => {
-  const id = (req.params as { id: string }).id;
+  const jobId = (req.params as { id: string }).id;
+  const { userId } = req.body as { userId: string };
   const lockedTill = new Date(Date.now() + 3600000); //locked for an hour
 
   await mongoDb
-    .collection<any>("contracts")
-    .updateOne({ $or: [{ _id: id }, { id: id }] }, { $set: { lockedTill } });
+    .collection<any>("users")
+    .updateOne(
+      { _id: new ObjectId(userId) },
+      { $set: { [`lockedJobs.${jobId}`]: lockedTill } },
+    );
 
   return { lockedTill };
 });

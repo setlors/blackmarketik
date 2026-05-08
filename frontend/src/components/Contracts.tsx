@@ -7,13 +7,13 @@ interface Job {
   id: string;
   name: string;
   pay: number;
-  lockedTill: string;
 }
 
 export default function Contracts() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [, setBalance] = useState(0);
   const [usId, setUsId] = useState<string | null>(null);
+  const [locks, setLocks] = useState<Record<string, string>>({});
   const sumQueue = useRef(new BiQueue());
   const isWorking = useRef(false);
 
@@ -32,6 +32,7 @@ export default function Contracts() {
       .then((user) => {
         setBalance(user.wallet);
         setUsId(user.id);
+        setLocks(user.lockedJobs);
       })
       .catch(() => setUsId(null));
   }, []);
@@ -60,17 +61,14 @@ export default function Contracts() {
     try {
       const response = await apiFetch(`/contracts/${job.id}/start`, {
         method: "POST",
-        body: JSON.stringify({}),
+        body: JSON.stringify({ userId: usId }),
       });
       if (response.ok) {
         const updated = await response.json();
-        setJobs((all) =>
-          all.map((one) =>
-            one.id === job.id
-              ? { ...one, lockedTill: updated.lockedTill }
-              : one,
-          ),
-        );
+        setLocks((prev) => ({
+          ...prev,
+          [job.id]: updated.lockedTill,
+        }));
         sumQueue.current.enqueue(job.name, job.pay);
         proccesQ();
       }
@@ -83,7 +81,8 @@ export default function Contracts() {
     <div className="flex-1 overflow-y-auto p-2">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {jobs.map((job) => {
-          const locked = new Date(job.lockedTill) > new Date();
+          const lockTime = locks[job.id];
+          const locked = lockTime ? new Date(lockTime) > new Date() : false;
           return (
             <div
               key={job.id}
