@@ -261,8 +261,7 @@ app.post("/heists", async (req, res) => {
     if (required.stealth > 0) totalUsefulUser += userStats.stealth;
 
     let successRate = 0;
-    if (totalRequired === 0) successRate = 90;
-    else if (totalUsefulUser >= totalRequired) successRate = 90;
+    if (totalUsefulUser >= totalRequired) successRate = 90;
     else if (totalUsefulUser > 0) {
       successRate = Math.floor((totalUsefulUser / totalRequired) * 100);
       if (successRate < 5) successRate = 5;
@@ -343,7 +342,7 @@ app.get("/analytics/successful-heists", async (req, res) => {
     }
     return res.send({
       message: "Analytics regarding successful heists",
-      data: totalSuccessful,
+      totalSuccessful,
       totalMoney,
     });
   } catch (error) {
