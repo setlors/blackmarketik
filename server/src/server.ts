@@ -143,7 +143,7 @@ app.get("/profil", async (req, res) => {
 app.post("/contracts/:id/start", async (req, res) => {
   const jobId = (req.params as { id: string }).id;
   const { userId } = req.body as { userId: string };
-  const lockedTill = new Date(Date.now() + 3600000); //locked for an hour
+  const lockedTill = new Date(Date.now() + 600000); //locked for 10 mins
 
   await mongoDb
     .collection<any>("users")

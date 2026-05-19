@@ -54,7 +54,7 @@ export default function Contracts() {
       }
       isWorking.current = false;
       proccesQ();
-    }, 300000);
+    }, 30000);
   };
 
   const start = async (job: Job) => {

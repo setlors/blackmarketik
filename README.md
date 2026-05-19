@@ -33,7 +33,7 @@ Check it out => [BLACKMARKETIK](https://blackmarketik.vercel.app/)
 - **User Accounts**: players create an account (or log in) and start with $150
 - **The Marketplace**: browsing items and buying them (this adds items to their inventories)
 - **The Inventory**: players can view their purchases and choose up to 2 items as their gear for the next heist
-- **Contracts (passive income)**: once started, a job gets locked for 1 hour, while the payout is added to a queue and processed automatically
+- **Contracts (passive income)**: once started, a job gets locked for 10 minutes, while the payout is added to a queue and processed automatically (30 seconds each)
 - **Heists**: the heist is selected randomly. When player triggers mechanic, the server calculates success rate based on the stats of the items equipped (Combat, Hacking, Stealth) and heist's difficulty. Used items are removed from inventory and successful heists bring a fat paycheck <3
 
 ## ❗ There are also all of OP labs implemented:
