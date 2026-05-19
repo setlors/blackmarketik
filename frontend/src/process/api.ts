@@ -1,5 +1,5 @@
 export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
-  const baseUrl = "http://localhost:5000";
+  const baseUrl = "https://blackmarketik-production.up.railway.app";
   const fullUrl = baseUrl + endpoint;
   const token = localStorage.getItem("bm_token");
 
