@@ -9,6 +9,8 @@
 
 Basically an economy sim, where players manage money, buy specialized gear from marketplace, complete 'real-life' contracts, and execute heists using items they've purchased!
 
+Check it out => [BLACKMARKETIK](https://blackmarketik.vercel.app/)
+
 ## 💻 Tech Stack
 
 <div align="center">
