@@ -22,7 +22,7 @@ export default function Inventory() {
       try {
         const [userRes, prodsRes] = await Promise.all([
           apiFetch(`/profil?t=${Date.now()}`),
-          fetch("http://localhost:5000/products"),
+          fetch("https://blackmarketik-production.up.railway.app/products"),
         ]);
         if (!userRes.ok) {
           setItems([]);
